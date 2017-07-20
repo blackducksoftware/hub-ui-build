@@ -2,8 +2,9 @@
   "name": "restart-hub",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "restart-hub.js",
   "scripts": {
+    "start": "node restart-hub.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

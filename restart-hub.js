@@ -62,7 +62,7 @@ const readFile = (filePath) => {
 };
 
 const modifyTomcatConfig = () => {
-    console.log('modify Tomcat config');
+    console.log('Modify Tomcat config');
     const filePath = path.resolve(repoDir, 'docker/blackducksoftware/hub-tomcat/server.xml');
     const reader = readline.createInterface({
         input: fs.createReadStream(filePath)
@@ -90,7 +90,7 @@ const modifyTomcatConfig = () => {
 };
 
 const modifyDockerConfig = () => {
-    console.log('modify Docker config');
+    console.log('Modify Docker config');
     const filePath = path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose/docker-compose.yml');
     return readFile(filePath)
         .then((fileContent) => {
@@ -113,9 +113,9 @@ modifyTomcatConfig()
         'docker',
         'docker:hub-docker:build'
     ], repoDir))
-    .then(() => modifyDockerConfig())
-    .then(() => {
-        return executeCommand('docker ps', [
+    .then(() => Promise.all([
+        modifyDockerConfig(),
+        executeCommand('docker ps', [
                 '-a',
                 '-q'
             ])
@@ -126,14 +126,10 @@ modifyTomcatConfig()
 
                 const hashes = hashBlock.split('\n').join(' ');
 
-                return executeCommand('docker stop', [
-                        hashes
-                    ])
-                    .then(() => executeCommand('docker rm', [
-                        hashes
-                    ]))
-            });
-    })
+                return executeCommand('docker stop', [hashes])
+                    .then(() => executeCommand('docker rm', [hashes]))
+            })
+    ]))
     .then(() => executeCommand('docker-compose', [
         '-f',
         'docker-compose.yml',
