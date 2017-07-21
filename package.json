@@ -10,6 +10,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "chalk": "^2.0.1",
+    "humanize-duration": "^3.10.0",
     "js-yaml": "^3.9.0"
   }
 }
