@@ -8,28 +8,28 @@ const repoDir = path.resolve(__dirname, '../rest-backend');
 const composeDir = path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose');
 
 const executeCommand = (command, args = [], cwd) => {
+    console.log('\nexecute', `${command} ${args.join(' ')}\n`);
+    const process = spawn(command, args, { cwd, shell: true });
+    let output = '';
+
+    process.stdout.on('data', (buffer) => {
+        const data = buffer.toString();
+        const trimmedData = data.trim();
+        if (trimmedData) {
+            console.log(trimmedData);
+        }
+        output += data;            
+    });
+
+    process.stderr.on('data', (buffer) => {
+        const data = buffer.toString();
+        const trimmedData = data.trim();
+        if (trimmedData) {
+            console.log(trimmedData);
+        }
+    });
+
     return new Promise((resolve, reject) => {
-        console.log('\nexecute', `${command} ${args.join(' ')}\n`);
-        const process = spawn(command, args, { cwd, shell: true });
-        let output = '';        
-
-        process.stdout.on('data', (buffer) => {
-            const data = buffer.toString();
-            const trimmedData = data.trim();
-            if (trimmedData) {
-                console.log(trimmedData);
-            }
-            output += data;            
-        });
-
-        process.stderr.on('data', (buffer) => {
-            const data = buffer.toString();
-            const trimmedData = data.trim();
-            if (trimmedData) {
-                console.log(trimmedData);
-            }
-        });
-
         process.on('exit', (code) => {
             if (code === 0) {
                 resolve(output);
@@ -57,7 +57,7 @@ const readFile = (filePath) => {
                 reject(err);
             }
             resolve(data);
-        })
+        });
     });
 };
 
