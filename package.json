@@ -12,6 +12,8 @@
   "dependencies": {
     "chalk": "^2.0.1",
     "humanize-duration": "^3.10.0",
-    "js-yaml": "^3.9.0"
-  }
+    "js-yaml": "^3.9.0",
+    "yargs": "^8.0.2"
+  },
+  "devDependencies": {}
 }

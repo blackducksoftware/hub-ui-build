@@ -1,3 +1,5 @@
+const buildStart = new Date();
+
 const path = require('path');
 const fs = require('fs');
 const readline = require('readline');
@@ -5,72 +7,38 @@ const { spawn } = require('child_process');
 const yaml = require('js-yaml');
 const chalk = require('chalk');
 const humanize = require('humanize-duration');
+const { argv } = require('yargs');
 
+const {
+    clean: doCleanVolumes
+} = argv;
 const repoDir = path.resolve(__dirname, '../rest-backend');
 const composeDir = path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose');
 
 const log = (msg) => {
     console.log(chalk.bgCyan.black(msg));
-}
+};
 
 const logCommand = (msg) => {
     console.log(chalk.bgYellowBright.black.bold(msg));
 };
 
 const logData = (msg) => {
-    console.log(chalk.green(msg));
+    process.stdout.write(msg);
 };
 
 const logError = (msg) => {
     console.log(chalk.red(msg));
 };
 
-// Spawn another process, run a command, and return the result
-const execute = (command, opts = {}) => {
-    const { 
-        args = [], 
-        cwd, 
-        listener = () => {},
-        silent = false
-    } = opts;
-    const childProc = spawn(command, args, { cwd, shell: true });
-    let output = '';
-
-    if (!silent) {
-        logCommand(`execute: ${command} ${args.join(' ')}\n`);    
-    }
-
-    childProc.stdout.on('data', (buffer) => {
-        const data = buffer.toString();
-        const trimmedData = data.trim();
-
-        if (trimmedData && !silent) {
-            logData(trimmedData);
-        }
-
-        listener(data);
-        output += data;            
-    });
-
-    childProc.stderr.on('data', (buffer) => {
-        const data = buffer.toString();
-        const trimmedData = data.trim();
-        if (trimmedData) {
-            logError(trimmedData);
-        }
-    });
-
+const isDirectory = (dirPath) => {
     return new Promise((resolve, reject) => {
-        childProc.on('exit', (code) => {
-            if (!silent) {
-                logData('\n');
+        fs.stat(dirPath, (err, stats) => {
+            if (err) {
+                reject(err);
+                return;
             }
-
-            if (code === 0) {
-                resolve(output);
-            }
-
-            reject(`Error running: ${command} ${args.join(' ')}`);
+            resolve(stats.isDirectory());
         });
     });
 };
@@ -93,6 +61,54 @@ const readFile = (filePath) => {
                 reject(err);
             }
             resolve(data);
+        });
+    });
+};
+
+// Spawn another process, run a command, and return the result
+const execute = (command, opts = {}) => {
+    const {
+        args = [], 
+        cwd = repoDir, 
+        listener = () => {},
+        silent = false
+    } = opts;
+    const childProc = spawn(command, args, { cwd, shell: true });
+    let output = '';
+
+    if (!silent) {
+        logCommand(`execute: ${command} ${args.join(' ')}\n`);    
+    }
+
+    childProc.stdout.on('data', (buffer) => {
+        const data = buffer.toString();
+
+        if (data && !silent) {
+            logData(data);
+        }
+
+        listener(data);
+        output += data;            
+    });
+
+    childProc.stderr.on('data', (buffer) => {
+        const data = buffer.toString();
+        if (data && !silent) {
+            logData(data);
+        }
+    });
+
+    return new Promise((resolve, reject) => {
+        childProc.on('exit', (code) => {
+            if (!silent) {
+                logData('\n');
+            }
+
+            if (code === 0) {
+                resolve(output);
+            }
+
+            reject(`Error running: ${command} ${args.join(' ')}`);
         });
     });
 };
@@ -154,12 +170,7 @@ const getAllContainerHashes = () => {
     return execute('docker ps', {
             args: ['-a', '-q']
         })
-        .then((hashBlock) => {
-            if (!hashBlock.trim()) {
-                return;
-            }
-            return hashBlock.split('\n').join(' ');
-        });
+        .then((hashBlock) => hashBlock.trim() || hashBlock.split('\n').join(' '));
 };
 
 const stopDockerContainers = (hashes) => {
@@ -177,7 +188,7 @@ const runDockerContainers = () => {
             '-d'
         ], 
         cwd: composeDir
-    })
+    });
 };
 
 const buildRestBackend = () => {
@@ -192,21 +203,27 @@ const buildRestBackend = () => {
 };
 
 const removeDockerContainers = () => {
-    return getAllContainerHashes()
-        .then((hashes) => {
-            if (!hashes) {
-                return;
-            }
+    const args = [
+        'down'
+    ];
 
-            return stopDockerContainers(hashes)
-                .then(() => execute('docker rm', {
-                    args: [hashes]
-                }));
-        });
+    if (doCleanVolumes) {
+        args.push('-v');
+    }
+
+    return isDirectory(composeDir)
+        .catch(() => {
+            log('Rest-backend hasn\'t been previously built\n');
+            return false;
+        })    
+        .then((isDir) => isDir && execute('docker-compose', {
+            args,
+            cwd: composeDir
+        }));
 };
 
 const pollContainerStatus = () => {
-    const interval = 10000;
+    const interval = 5000;
     const timeout = 120000;
     const start = new Date();
 
@@ -225,7 +242,7 @@ const pollContainerStatus = () => {
 
                 if (areContainersHealthy) {
                     log('All containers are healthy');
-                    log(`Total setup time: ${humanize(new Date() - global.buildStart)}`);
+                    log(`Total setup time: ${humanize(new Date() - buildStart)}`);
                 } else if (elapsedTime > timeout) {
                     logError('Containers timed out waiting for an all healthy status');
                     process.stderr.write("\007");
@@ -238,16 +255,13 @@ const pollContainerStatus = () => {
     checkStatus();
 };
 
-global.buildStart = new Date();
-
-modifyTomcatConfig()
+Promise.all([
+        modifyTomcatConfig(),
+        removeDockerContainers()
+    ])
     .then(() => buildRestBackend())
     // Modify the docker compose configuration and
-    // stop / remove any docker images currently running
-    .then(() => Promise.all([
-        modifyDockerConfig(),
-        removeDockerContainers()
-    ]))
+    .then(() => modifyDockerConfig())
     // Run the new docker images
     .then(() => runDockerContainers())
     .then(() => pollContainerStatus())
