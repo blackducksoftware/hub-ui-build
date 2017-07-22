@@ -11,4 +11,4 @@ Build and mount the Hub's docker containers, and make modifications to the Apach
 
 ## Recommended usage
 Add this alias to your .bash_profile:
-<br>```alias hub-up='node {ABS_PATH}/hub-build-script/hub-up.js'```
+<br>```alias hub-up='node {ABS_PATH}/hub-ui-build/hub-up.js'```
