@@ -12,4 +12,4 @@ Build and mount the Hub's docker containers, and make modifications to the Apach
 
 ## Recommended usage
 Add this alias to your .bash_profile:
-<br>```alias hub-up='node {REPO_PARENT_DIR}/hub-build-script/restart-hub.js'```
+<br>```alias hub-up='node {ABS_PATH}/hub-build-script/restart-hub.js'```
