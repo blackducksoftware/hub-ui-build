@@ -1,5 +1,5 @@
 # hub-build-script
-Simple script to build and mount the Hub's docker containers, and make modifications to the Apache Tomcat and Docker compose configurations to so that local Hub instances are friendly with the UI development proxy
+Build and mount the Hub's docker containers, and make modifications to the Apache Tomcat and Docker compose configurations to so that local Hub instances are friendly with the UI development proxy
 
 
 ## To run:
@@ -8,8 +8,8 @@ Simple script to build and mount the Hub's docker containers, and make modificat
 
 ## Options:
 ```--clean-vols, -v```: Remove volumes of previous docker containers
-```--clean-imgs, -i```: Remove all blackducksoftware/hub images
+<br>```--clean-imgs, -i```: Remove all blackducksoftware/hub images
 
 ## Recommended usage
 Add this alias to your .bash_profile:
-```alias hub-up='node ~/workspace/hub-build-script/restart-hub.js'```
+<br>```alias hub-up='node {REPO_PARENT_DIR}/hub-build-script/restart-hub.js'```
