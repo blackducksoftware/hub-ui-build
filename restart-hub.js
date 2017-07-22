@@ -9,9 +9,9 @@ const chalk = require('chalk');
 const humanize = require('humanize-duration');
 const { argv } = require('yargs');
 
-const {
-    clean: doCleanVolumes
-} = argv;
+const doCleanImages = argv['clean-imgs'] || argv.i;
+const doCleanVolumes = argv['clean-vols'] || argv.v;
+
 const repoDir = path.resolve(__dirname, '../rest-backend');
 const composeDir = path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose');
 
@@ -170,13 +170,31 @@ const getAllContainerHashes = () => {
     return execute('docker ps', {
             args: ['-a', '-q']
         })
-        .then((hashBlock) => hashBlock.trim() || hashBlock.split('\n').join(' '));
+        .then((hashBlock) => hashBlock.trim() && hashBlock.split('\n').join(' '));
 };
 
 const stopDockerContainers = (hashes) => {
     return execute('docker stop', {
         args: [hashes]
     });
+};
+
+const pruneDockerImages = () => {
+    return getOrphanImageHashes()
+        .then((hashes) => hashes && execute('docker rmi', {
+            args: [hashes]
+        }));
+};
+
+const getOrphanImageHashes = () => {
+    return execute('docker images', {
+            silent: true,
+            args: [
+                '-f dangling=true',
+                '-q'
+            ]
+        })
+        .then((hashBlock) => hashBlock.trim() && hashBlock.split('\n').join(' '));        
 };
 
 const runDockerContainers = () => {
@@ -202,6 +220,14 @@ const buildRestBackend = () => {
     });
 };
 
+const removeHubImages = () => {
+    return execute('docker rmi', {
+        args: [
+            "$(docker images | grep blackducksoftware\/hub | awk '{print $3}')"
+        ]
+    });
+};
+
 const removeDockerContainers = () => {
     const args = [
         'down'
@@ -219,12 +245,13 @@ const removeDockerContainers = () => {
         .then((isDir) => isDir && execute('docker-compose', {
             args,
             cwd: composeDir
-        }));
+        }))
+        .then(() => doCleanImages ? removeHubImages() : Promise.resolve());
 };
 
 const pollContainerStatus = () => {
     const interval = 5000;
-    const timeout = 120000;
+    const timeout = 180000;
     const start = new Date();
 
     logCommand('Polling for container health status\n');
@@ -264,5 +291,6 @@ Promise.all([
     .then(() => modifyDockerConfig())
     // Run the new docker images
     .then(() => runDockerContainers())
+    .then(() => pruneDockerImages())
     .then(() => pollContainerStatus())
     .catch(err => err && logError(err));
