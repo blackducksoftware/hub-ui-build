@@ -1,10 +1,10 @@
 {
-  "name": "restart-hub",
+  "name": "hub-ui-build",
   "version": "1.0.0",
   "description": "",
-  "main": "restart-hub.js",
+  "main": "hub-up.js",
   "scripts": {
-    "start": "node restart-hub.js",
+    "start": "node hub-up.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

@@ -1,8 +1,8 @@
 const path = require('path');
 const execute = require('./lib/execute');
 
-const buildPath = path.resolve(__dirname, 'ui-build.command');
-const proxyPath = path.resolve(__dirname, 'ui-proxy.command');
+const buildPath = path.resolve(__dirname, 'scripts/ui-build.command');
+const proxyPath = path.resolve(__dirname, 'scripts/ui-proxy.command');
 
 Promise.all([
         execute.setPermission(buildPath),
