@@ -157,7 +157,7 @@ const pollContainerStatus = () => {
                     log('All containers are healthy');
                     log(`Total setup time: ${humanize(new Date() - buildStart)}`);
                 } else if (elapsedTime > timeout) {
-                    log.error('Containers timed out waiting for an all healthy status');
+                    log.error('Build timed out waiting for a healthy status for all docker containers');
                     process.stderr.write("\007");
                 } else {
                     setTimeout(checkStatus, interval);
