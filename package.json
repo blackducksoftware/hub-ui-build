@@ -4,15 +4,18 @@
   "description": "",
   "main": "hub-up.js",
   "scripts": {
+    "aliases": "node bash-aliases.js",
     "start": "node hub-up.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "Ben Hallion",
   "license": "ISC",
   "dependencies": {
     "chalk": "^2.0.1",
     "humanize-duration": "^3.10.0",
     "js-yaml": "^3.9.0",
+    "mkdirp": "^0.5.1",
+    "rimraf": "^2.6.1",
     "yargs": "^8.0.2"
   },
   "devDependencies": {}

@@ -20,7 +20,7 @@ const modifyTomcatConfig = () => {
 
     log.command('Modify Apache Tomcat server.xml config\n');
 
-    return fsProm.filterLines(filePath, (line) => {
+    return fsProm.filterFile(filePath, (line) => {
             const trimmedLine = line.trim();        
             // We want to remove these lines from the config file
             return ['scheme="https"', 'proxyPort="443"']
@@ -50,19 +50,6 @@ const modifyDockerConfig = () => {
 
             return fsProm.writeFile(filePath, serializedConfig);
         });
-};
-
-const getAllContainerHashes = () => {
-    return execute('docker ps', {
-            args: ['-a', '-q']
-        })
-        .then((hashBlock) => hashBlock.trim() && hashBlock.split('\n').join(' '));
-};
-
-const stopDockerContainers = (hashes) => {
-    return execute('docker stop', {
-        args: [hashes]
-    });
 };
 
 const pruneDockerImages = () => {
