@@ -9,7 +9,7 @@ Build and mount the Hub's docker containers, and make modifications to the Apach
 ```--clean-vols, -v```: Remove volumes of previous docker containers
 <br>```--clean-imgs, -i```: Remove all blackducksoftware/hub images
 
-## Recommended
+## Recommended for OSX users
 Run ```npm run aliases && source ~/.bashrc```
 <br> This binds the `hub-up` and `hub-dev` aliases
 <br> `hub-up` allows the Hub's docker build to be run globally
