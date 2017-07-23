@@ -95,10 +95,13 @@ const buildRestBackend = () => {
 
 const removeHubImages = () => {
     return execute('docker rmi', {
-        args: [
-            "$(docker images | grep blackducksoftware\/hub | awk '{print $3}')"
-        ]
-    });
+            args: [
+                "$(docker images | grep blackducksoftware\/hub | awk '{print $3}')"
+            ]
+        })
+        .catch(err => {
+            log('There are no Hub docker images to remove\n');
+        });
 };
 
 const removeDockerContainers = () => {

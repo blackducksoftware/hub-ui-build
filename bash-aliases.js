@@ -10,6 +10,7 @@ if (os.platform() === 'win32') {
 
 const runHubPath = path.resolve(__dirname, 'hub-up.js');
 const runDevPath = path.resolve(__dirname, 'ui-dev.js');
+const runUiPath = path.resolve(__dirname, 'ui-up.js');
 const bashrcPath = path.resolve(os.homedir(), '.bashrc');
 const bashProfilePath = path.resolve(os.homedir(), '.bash_profile');
 const uiDir = path.resolve(__dirname, '../ui');
@@ -17,8 +18,9 @@ const cmdsDir = path.resolve(__dirname, 'commands');
 const startHub = `node ${runHubPath}`;
 
 const aliases = [
-    `alias hub-up='${startHub};'`,
-    `alias ui-dev='node ${runDevPath};'`
+    `function hub-up() { ${startHub} $@; }`,
+    `function ui-up() { node ${runUiPath} $@; }`,
+    `function ui-dev() { node ${runDevPath} $@; }`
 ];
 
 fsProm.isFile(bashrcPath)
@@ -58,7 +60,7 @@ const proxyCmdPath = path.resolve(cmdsDir, 'ui-proxy.command');
 fsProm.cleanDirectory(cmdsDir)
     .then(() => Promise.all([
         fsProm.writeFile(buildUiCmdPath, buildUi),
-        fsProm.writeFile(buildHubCmdPath, `printf '\\e[4;426;540t'; printf '\\e[3;0;505t'; printf '\\e[5t'; ${startHub};`),
+        fsProm.writeFile(buildHubCmdPath, `printf '\\e[4;426;540t'; printf '\\e[3;0;505t'; printf '\\e[5t'; ${startHub}`),
         fsProm.writeFile(proxyCmdPath, runLocalProxy)
     ]))
     .then(() => Promise.all([
