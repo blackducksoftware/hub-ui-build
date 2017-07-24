@@ -105,7 +105,11 @@ const removeHubImages = () => {
 };
 
 const removeDockerContainers = () => {
-    const args = doCleanVolumes ? ['down', 'v'] : ['stop'];
+    if (!doCleanVolumes) {
+        return;
+    }
+
+    const args = ['down', 'v'];
 
     return fsProm.isDirectory(composeDir)
         .catch(() => {
