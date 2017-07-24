@@ -10,6 +10,7 @@ const execute = require('./lib/execute');
 
 const doCleanImages = argv['clean-imgs'] || argv.i;
 const doCleanVolumes = argv['clean-vols'] || argv.v;
+const doPruneImages = argv['prune-imgs'] || argv.p;
 
 const repoDir = path.resolve(__dirname, '../rest-backend');
 const composeDir = path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose');
@@ -53,6 +54,10 @@ const modifyDockerConfig = () => {
 };
 
 const pruneDockerImages = () => {
+    if (!doPruneImages) {
+        return;
+    }
+
     return getOrphanImageHashes()
         .then((hashes) => hashes && execute('docker rmi', {
             args: [hashes]
@@ -73,8 +78,6 @@ const getOrphanImageHashes = () => {
 const runDockerContainers = () => {
     return execute('docker-compose', {
         args: [
-            '-f',
-            'docker-compose.yml',
             'up',
             '-d'
         ], 
