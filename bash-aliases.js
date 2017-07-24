@@ -51,7 +51,7 @@ fsProm.isFile(bashProfilePath)
         }
     });
 
-const buildUi = `printf '\\e[4;290;540t'; printf '\\e[3;540;0t'; printf '\\e[3;0;206t'; cd ${uiDir};\ngrunt default watch;\n`;
+const buildUi = `printf '\\e[4;290;540t'; printf '\\e[3;540;0t'; printf '\\e[3;0;206t'; cd ${uiDir};\ngrunt default watch --force;\n`;
 const runLocalProxy = `printf '\\e[4;206;540t'; printf '\\e[3;0;0t'; cd ${uiDir};\nnode dev-server.js --local-port=8081 --remote-port=8080 --remote-host=localhost --no-mocks --no-ssl;\n`;
 const buildUiCmdPath = path.resolve(cmdsDir, 'ui-build.command');
 const buildHubCmdPath = path.resolve(cmdsDir, 'hub-start.command');
