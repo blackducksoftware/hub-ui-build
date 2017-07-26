@@ -6,7 +6,7 @@ Build and mount the Hub's docker containers, and make modifications to the Apach
 2. Run ```npm start```
 
 ## Options:
-```--clean-vols, -v```: Remove volumes of previous docker containers
+```--clean-vols, -v```: Remove volumes of the previously created Hub containers
 <br>```--clean-imgs, -i```: Remove all blackducksoftware/hub images
 <br>```--prune-imgs, -p```: Prune 'dangling' Docker images
 
