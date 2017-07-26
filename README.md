@@ -1,4 +1,5 @@
-# HTTP Hub Docker Build Compatible with the UI dev proxy
+# HTTP Hub Docker Build 
+## Compatible with the UI development proxy
 Build and mount the Hub's docker containers, and make modifications to the Apache Tomcat and Docker compose configurations so that local Hub instances are friendly with the UI development proxy
 
 ## To run:
