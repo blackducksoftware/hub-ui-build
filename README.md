@@ -13,12 +13,12 @@ Build and mount the Hub's docker containers, and make modifications to the Apach
 
 ## Recommended for OSX users
 Run ```npm run aliases && source ~/.bashrc```
-<br> This binds the `hub-up` and `ui-dev` aliases
+<br> This binds the `hub-up`, `ui-up` and `ui-dev` aliases
 
-`hub-up` runs the Hub's docker build
+`hub-up`: Runs the Hub's docker build, creates and mounts new containers as necessary
 
-`ui-up` builds the UI and launches the development proxy
+`ui-up`: Builds the UI and launches the development proxy
 <br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
 
-`ui-dev` Runs the Hub's docker build, builds the UI, and launches the UI development proxy 
+`ui-dev`: Equivalent of running both `hub-up` and `ui-up`
 <br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
