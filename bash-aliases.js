@@ -11,6 +11,7 @@ if (os.platform() === 'win32') {
 const runHubPath = path.resolve(__dirname, 'hub-up.js');
 const runDevPath = path.resolve(__dirname, 'ui-dev.js');
 const runUiPath = path.resolve(__dirname, 'ui-up.js');
+// TODO: Create the source paths with path.join. We'll need to remove the previously inserted source commands if present
 const bashrcPath = path.resolve(os.homedir(), '.bashrc');
 const bashProfilePath = path.resolve(os.homedir(), '.bash_profile');
 const uiDir = path.resolve(__dirname, '../ui');
@@ -26,7 +27,6 @@ const aliases = [
 fsProm.isFile(bashrcPath)
     .catch(err => false)
     .then(isFile => {
-
         log.command(`Writing aliases: \n \t${aliases.join('\n\t')}\n to ${bashrcPath}\n`);
 
         if (isFile) {
@@ -41,7 +41,6 @@ const source = `source ${bashrcPath}`;
 fsProm.isFile(bashProfilePath)
     .catch(err => false)
     .then(isFile => {
-
         log.command(`Sourcing ${bashrcPath} from ${bashProfilePath}\n`);
 
         if (isFile) {

@@ -1,5 +1,6 @@
 const buildStart = new Date();
 
+
 const path = require('path');
 const yaml = require('js-yaml');
 const humanize = require('humanize-duration');
@@ -14,6 +15,7 @@ const doPruneImages = argv['prune-imgs'] || argv.p;
 
 const repoDir = path.resolve(__dirname, '../rest-backend');
 const composeDir = path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose');
+let mountAttempts = 0;
 
 // Use http instead of https, because we can't bind both the webapp and the dev proxy to port 443
 const modifyTomcatConfig = () => {
@@ -75,14 +77,24 @@ const getOrphanImageHashes = () => {
         .then((hashBlock) => hashBlock.trim() && hashBlock.split('\n').join(' '));        
 };
 
-const runDockerContainers = () => {
+const mountHubContainers = () => {
     return execute('docker-compose', {
-        args: [
-            'up',
-            '-d'
-        ], 
-        cwd: composeDir
-    });
+            args: [
+                'up',
+                '-d'
+            ],
+            cwd: composeDir
+        })
+        .catch(() => {
+            mountAttempts++;
+            log.error('Docker containers failed to mount.\n');
+            log('Removing all old containers and re-creating from new images.\n');
+
+            if (mountAttempts < 2) {
+                return removeHubContainers()
+                    .then(() => mountHubContainers());
+            }
+        });
 };
 
 const buildRestBackend = () => {
@@ -102,17 +114,17 @@ const removeHubImages = () => {
                 "$(docker images | grep blackducksoftware\/hub | awk '{print $3}')"
             ]
         })
-        .catch(err => {
+        .catch(() => {
             log('There are no Hub docker images to remove\n');
         });
 };
 
-const removeDockerContainers = () => {
-    if (!doCleanVolumes) {
-        return;
-    }
+const removeHubContainers = () => {
+    const args = ['down'];
 
-    const args = ['down', 'v'];
+    if (doCleanVolumes) {
+        args.push('-v');
+    }
 
     return fsProm.isDirectory(composeDir)
         .catch(() => {
@@ -123,7 +135,6 @@ const removeDockerContainers = () => {
             args,
             cwd: composeDir
         }))
-        .then(() => doCleanImages && removeHubImages());
 };
 
 const pollContainerStatus = () => {
@@ -161,13 +172,14 @@ const pollContainerStatus = () => {
 
 Promise.all([
         modifyTomcatConfig(),
-        removeDockerContainers()
+        doCleanVolumes && removeHubContainers()
     ])
+    .then(() => doCleanImages && removeHubImages())
     .then(() => buildRestBackend())
     // Modify the docker compose configuration and
     .then(() => modifyDockerConfig())
     // Run the new docker images
-    .then(() => runDockerContainers())
+    .then(() => mountHubContainers())
     .then(() => pruneDockerImages())
     .then(() => pollContainerStatus())
     .catch(err => err && log.error(err));
