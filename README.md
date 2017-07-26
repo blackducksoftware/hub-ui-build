@@ -8,11 +8,16 @@ Build and mount the Hub's docker containers, and make modifications to the Apach
 ## Options:
 ```--clean-vols, -v```: Remove volumes of previous docker containers
 <br>```--clean-imgs, -i```: Remove all blackducksoftware/hub images
+<br>```--prune-imgs, -p```: Prune 'dangling' Docker images
 
 ## Recommended for OSX users
 Run ```npm run aliases && source ~/.bashrc```
 <br> This binds the `hub-up` and `ui-dev` aliases
 
-`hub-up` allows the Hub's docker build to be run globally
+`hub-up` runs the Hub's docker build
 
-`ui-dev` Runs the docker build, builds the UI, and launches the UI development proxy <b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
+`ui-up` builds the UI and launches the development proxy
+<br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
+
+`ui-dev` Runs the Hub's docker build, builds the UI, and launches the UI development proxy 
+<br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
