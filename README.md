@@ -2,7 +2,8 @@
 Build and mount the Hub's docker containers, and make modifications to the Apache Tomcat and Docker compose configurations so that local Hub instances are friendly with the UI development proxy
 
 ## To run:
-1. Clone and install into the parent directory of the rest-backend repository. <b>** NOTE **</b> This step is important, the script assumes that it has been installed in the correct location.
+1. Clone and install into the parent directory of the rest-backend repository. 
+<br><b>** NOTE **</b> This step is important, the script assumes that it has been installed in the correct location.
 2. Run ```npm start```
 
 ## Options:
