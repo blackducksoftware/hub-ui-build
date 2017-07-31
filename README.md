@@ -1,6 +1,6 @@
 # HTTP Hub Docker Build 
 ### Compatible with the UI development proxy
-Build and mount the Hub's docker containers, and make modifications to the Apache Tomcat and Docker compose configurations so that local Hub instances are friendly with the UI development proxy
+Builds and mounts the Hub's docker containers, and makes modifications to the Tomcat and docker-compose configurations so the rest-backend's web app is hosted on port 8080
 
 ## To run:
 1. Clone and install into the parent directory of the rest-backend repository. 
