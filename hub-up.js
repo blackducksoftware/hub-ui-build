@@ -1,6 +1,5 @@
 const buildStart = new Date();
 
-
 const path = require('path');
 const yaml = require('js-yaml');
 const humanize = require('humanize-duration');
