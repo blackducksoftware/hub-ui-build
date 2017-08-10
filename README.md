@@ -19,7 +19,8 @@ Run ```npm run aliases && source ~/.bashrc```
 `hub-up`: Runs the Hub's docker build, creates and mounts new containers as necessary
 
 `ui-up`: Builds the UI and launches the development proxy
-<br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
+<br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend, and that grunt has been installed globally. To install grunt, run:
+```npm i grunt -g```
 
 `ui-dev`: Equivalent of running both `hub-up` and `ui-up`
 <br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
