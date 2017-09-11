@@ -7,6 +7,7 @@ const { argv } = require('yargs');
 const fsProm = require('./lib/fs-promise');
 const log = require('./lib/log');
 const execute = require('./lib/execute');
+const chalk = require('chalk');
 
 const doCleanImages = argv['clean-imgs'] || argv.i;
 const doCleanVolumes = argv['clean-vols'] || argv.v;
@@ -150,16 +151,23 @@ const pollContainerStatus = () => {
             .then((output) => {
                 const lines = output.trim().split('\n');
                 const containers = lines.slice(1);
-                const areContainersHealthy = containers
-                    .every(container => container.includes('healthy'));
+                const isContainerUnhealthy = containers
+                    .some(container => container.includes('(unhealthy)'));
+                const areContainersHealthy = !isContainerUnhealthy && containers
+                    .every(container => container.includes('(healthy)'));
                 const elapsedTime = new Date() - start;
 
                 if (areContainersHealthy) {
                     log('All containers are healthy');
                     log(`Total setup time: ${humanize(new Date() - buildStart)}`);
                 } else if (elapsedTime > timeout) {
-                    log.error('Build timed out waiting for a healthy status for all docker containers');
-                    process.stderr.write("\007");
+                    if (isContainerUnhealthy) {
+                        log.error(`One or more containers is unhealthy, try removing all images and volumes with ${log.getCommandColor('hub-up -iv')}\n`);
+                        logUnhealthyContainers();
+                    } else {
+                        log.error('Build timed out waiting for a healthy status for all docker containers');
+                    }
+                    process.stderr.write('\007');
                 } else {
                     setTimeout(checkStatus, interval);
                 }
@@ -167,6 +175,39 @@ const pollContainerStatus = () => {
     };
 
     checkStatus();
+};
+
+const getUnhealthyContainers = () => {
+    return execute('docker ps | grep \'(unhealthy)\' | awk \'{print $1" "$2}\'')
+        .then((containersData) => {
+            return containersData
+                .trim()
+                .split('\n')
+                .map(containerData => {
+                    const [hash, name] = containerData.split(' ');
+                    return {
+                        hash,
+                        name
+                    };
+                });
+        });
+};
+
+const logUnhealthyContainers = () => {
+    return getUnhealthyContainers()
+        .then(containers => containers.reduce((lastPromise, { name, hash }) => {
+
+            return lastPromise
+                .then(() => {
+                    log.error(`Logs from unhealthy container: ${name}\n`);
+                    return execute('docker logs', {
+                        args: [
+                            hash
+                        ]
+                    });
+                })
+                .then(() => log.data('\n'));
+        }, Promise.resolve()));
 };
 
 Promise.all([
