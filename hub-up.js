@@ -157,16 +157,15 @@ const pollContainerStatus = () => {
                     .every(container => container.includes('(healthy)'));
                 const elapsedTime = new Date() - start;
 
-                if (areContainersHealthy) {
+                if (isContainerUnhealthy) {
+                    log.error(`One or more containers is unhealthy, try removing all images and volumes with ${log.getCommandColor('hub-up -iv')}\n`);
+                    process.stderr.write('\007');
+                    logUnhealthyContainers();
+                } else if (areContainersHealthy) {
                     log('All containers are healthy');
                     log(`Total setup time: ${humanize(new Date() - buildStart)}`);
                 } else if (elapsedTime > timeout) {
-                    if (isContainerUnhealthy) {
-                        log.error(`One or more containers is unhealthy, try removing all images and volumes with ${log.getCommandColor('hub-up -iv')}\n`);
-                        logUnhealthyContainers();
-                    } else {
-                        log.error('Build timed out waiting for a healthy status for all docker containers');
-                    }
+                    log.error('Build timed out waiting for a healthy status for all docker containers');
                     process.stderr.write('\007');
                 } else {
                     setTimeout(checkStatus, interval);
@@ -178,7 +177,9 @@ const pollContainerStatus = () => {
 };
 
 const getUnhealthyContainers = () => {
-    return execute('docker ps | grep \'(unhealthy)\' | awk \'{print $1" "$2}\'')
+    return execute('docker ps | grep \'(unhealthy)\' | awk \'{print $1" "$2}\'', {
+            silent: true
+        })
         .then((containersData) => {
             return containersData
                 .trim()
@@ -194,12 +195,12 @@ const getUnhealthyContainers = () => {
 };
 
 const logUnhealthyContainers = () => {
+    log('Log out unhealthy containers:\n');
     return getUnhealthyContainers()
         .then(containers => containers.reduce((lastPromise, { name, hash }) => {
-
             return lastPromise
                 .then(() => {
-                    log.error(`Logs from unhealthy container: ${name}\n`);
+                    log.error(`Container name: ${name}\n`);
                     return execute('docker logs', {
                         args: [
                             hash
