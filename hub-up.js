@@ -100,7 +100,7 @@ const mountHubContainers = () => {
 const buildRestBackend = () => {
     return execute('./gradlew', {
         args: [
-            'assemble',
+            'clean',
             'docker',
             'docker:hub-docker:build'
         ], 
