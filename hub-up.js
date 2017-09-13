@@ -9,6 +9,7 @@ const log = require('./lib/log');
 const execute = require('./lib/execute');
 const chalk = require('chalk');
 
+const doDirtyBuild = argv['dirty-build'] || argv.d;
 const doCleanImages = argv['clean-imgs'] || argv.i;
 const doCleanVolumes = argv['clean-vols'] || argv.v;
 const doPruneImages = argv['prune-imgs'] || argv.p;
@@ -98,12 +99,13 @@ const mountHubContainers = () => {
 };
 
 const buildRestBackend = () => {
+    const args = (doDirtyBuild ? [] : ['clean']).concat(
+        'docker',
+        'docker:hub-docker:build'
+    );
+
     return execute('./gradlew', {
-        args: [
-            'clean',
-            'docker',
-            'docker:hub-docker:build'
-        ], 
+        args,
         cwd: repoDir
     });
 };
@@ -160,6 +162,7 @@ const pollContainerStatus = () => {
                 if (isContainerUnhealthy) {
                     log.error(`One or more containers is unhealthy, try removing all images and volumes with ${log.getCommandColor('hub-up -iv')}\n`);
                     process.stderr.write('\007');
+                    log.data('\n');
                     logUnhealthyContainers();
                 } else if (areContainersHealthy) {
                     log('All containers are healthy');
@@ -195,20 +198,13 @@ const getUnhealthyContainers = () => {
 };
 
 const logUnhealthyContainers = () => {
-    log('Log out unhealthy containers:\n');
     return getUnhealthyContainers()
-        .then(containers => containers.reduce((lastPromise, { name, hash }) => {
-            return lastPromise
-                .then(() => {
-                    log.error(`Container name: ${name}\n`);
-                    return execute('docker logs', {
-                        args: [
-                            hash
-                        ]
-                    });
-                })
-                .then(() => log.data('\n'));
-        }, Promise.resolve()));
+        .then(containers => {
+            containers.forEach(({ name, hash }) => {
+                log.error(`Container: ${name} is unhealthy`);
+                log.error(`Run ${log.getCommandColor(`docker logs ${hash}`)} to see the container's logs\n`);
+            });
+        });
 };
 
 Promise.all([
