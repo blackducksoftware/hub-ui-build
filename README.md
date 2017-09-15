@@ -9,7 +9,7 @@ Builds and mounts the Hub's docker containers, and makes modifications to the To
 
 ## Options:
 ```--prune-vols, -v```: Prune volumes
-<br>```--prune-imgs, -i```: Prune dangling Docker images
+<br>```--prune-imgs, -i```: Prune images
 <br>```--dirty-build, -d```: Build the rest-backend without the `clean` gradle task, for a faster build
 <br>```--skip-build, -s```: Don't make a rest-backend build, useful for unmounting / remounting containers
 
