@@ -8,9 +8,9 @@ Builds and mounts the Hub's docker containers, and makes modifications to the To
 2. Run ```npm start```
 
 ## Options:
-```--clean-vols, -v```: Remove volumes of the previously created Hub containers
-<br>```--clean-imgs, -i```: Remove all blackducksoftware/hub images
-<br>```--prune-imgs, -p```: Prune 'dangling' Docker images
+```--prune-vols, -v```: Prune volumes
+<br>```--prune-imgs, -p```: Prune dangling Docker images
+<br>```--dirty-build, -p```: Build the rest-backend without the `clean` gradle task, for a faster build
 
 ## Recommended for OSX users
 Run ```npm run aliases && source ~/.bashrc```
