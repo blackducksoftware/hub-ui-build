@@ -10,6 +10,7 @@ const execute = require('./lib/execute');
 const chalk = require('chalk');
 
 const doDirtyBuild = argv['dirty-build'] || argv.d;
+const skipBuild = argv['skip-build'] || argv.s;
 const doPruneImages = argv['prune-imgs'] || argv.i;
 const doPruneVolumes = argv['prune-vols'] || argv.v;
 
@@ -203,7 +204,7 @@ const logUnhealthyContainers = () => {
         .then(containers => {
             containers.forEach(({ name, hash }) => {
                 log.error(`Container: ${name} is unhealthy`);
-                log.error(`Run ${log.getCommandColor(`docker logs ${hash} --tail`)} to see the container's last 50 log entries\n`);
+                log.error(`Run ${log.getCommandColor(`docker logs ${hash} --tail 50`)} to see the container's last 50 log entries\n`);
             });
         });
 };
@@ -219,15 +220,15 @@ const logRestartingContainers = () => {
 };
 
 Promise.all([
-        modifyTomcatConfig(),
+        !skipBuild && modifyTomcatConfig(),
         (doPruneVolumes || doPruneImages) && removeHubContainers()
     ])
     .then(() => doPruneImages && pruneDockerImages())
     .then(() => doPruneVolumes && pruneDockerVolumes())
-    .then(() => buildRestBackend())
+    .then(() => !skipBuild && buildRestBackend())
     .then(() => Promise.all([
         // Restore the server.xml file to its original state
-        restoreTomcatConfig(),
+        !skipBuild && restoreTomcatConfig(),
         // Modify the docker compose configuration
         modifyDockerConfig()
     ]))
