@@ -17,7 +17,7 @@ Builds and mounts the Hub's docker containers, and makes modifications to the To
 Run ```npm run aliases && source ~/.bashrc```
 <br> This binds the `hub-up`, `ui-up` and `ui-dev` aliases
 
-`hub-up`: Runs the Hub's docker build, creates and mounts new containers as necessary. This is equivalent to `npm start`
+`hub-up`: Equivalent to `npm start`
 
 `ui-up`: Builds the UI and launches the development proxy
 <br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
