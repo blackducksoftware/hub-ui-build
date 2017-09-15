@@ -9,18 +9,18 @@ Builds and mounts the Hub's docker containers, and makes modifications to the To
 
 ## Options:
 ```--prune-vols, -v```: Prune volumes
-<br>```--prune-imgs, -i```: Prune dangling Docker images
+<br>```--prune-imgs, -i```: Prune images
 <br>```--dirty-build, -d```: Build the rest-backend without the `clean` gradle task, for a faster build
+<br>```--skip-build, -s```: Don't make a rest-backend build, useful for unmounting / remounting containers
 
 ## Recommended for OSX users
 Run ```npm run aliases && source ~/.bashrc```
 <br> This binds the `hub-up`, `ui-up` and `ui-dev` aliases
 
-`hub-up`: Runs the Hub's docker build, creates and mounts new containers as necessary
+`hub-up`: Equivalent to `npm start`
 
 `ui-up`: Builds the UI and launches the development proxy
-<br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend, and that grunt has been installed globally. To install grunt, run:
-```npm i grunt -g```
+<br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
 
-`ui-dev`: Equivalent of running both `hub-up` and `ui-up`
+`ui-dev`: Equivalent to running both `hub-up` and `ui-up`
 <br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
