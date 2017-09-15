@@ -10,7 +10,7 @@ Builds and mounts the Hub's docker containers, and makes modifications to the To
 ## Options:
 ```--prune-vols, -v```: Prune volumes
 <br>```--prune-imgs, -p```: Prune dangling Docker images
-<br>```--dirty-build, -p```: Build the rest-backend without the `clean` gradle task, for a faster build
+<br>```--dirty-build, -d```: Build the rest-backend without the `clean` gradle task, for a faster build
 
 ## Recommended for OSX users
 Run ```npm run aliases && source ~/.bashrc```
