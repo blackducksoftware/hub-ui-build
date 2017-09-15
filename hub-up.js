@@ -35,13 +35,13 @@ const modifyTomcatConfig = () => {
                 .every(configLine => configLine !== trimmedLine);
         })
         .then((content) => fsProm.writeFile(tomcatConfigPath, content))
-        .then(() => { isConfigModified = false; })
+        .then(() => { isConfigModified = true; })
 };
 
 const restoreTomcatConfig = () => {
     log.command('Restore Apache Tomcat server.xml config\n');
     return fsProm.writeFile(tomcatConfigPath, tomcatOriginalConfig)
-        .then(() => { isConfigModified = true; })
+        .then(() => { isConfigModified = false; })
 };
 
 // Expose port 8080 on the webapp container, because that's the port the dev proxy uses
