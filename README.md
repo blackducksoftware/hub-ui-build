@@ -22,5 +22,5 @@ Run ```npm run aliases && source ~/.bashrc```
 `ui-up`: Builds the UI and launches the development proxy
 <br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
 
-`ui-dev`: Equivalent of running both `hub-up` and `ui-up`
+`ui-dev`: Equivalent to running both `hub-up` and `ui-up`
 <br><b> ** NOTE ** </b> This alias assumes that the ui repo is installed in the same directory as the rest-backend
