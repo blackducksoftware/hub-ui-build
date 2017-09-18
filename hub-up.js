@@ -13,6 +13,7 @@ const doDirtyBuild = argv['dirty-build'] || argv.d;
 const skipBuild = argv['skip-build'] || argv.s;
 const doPruneImages = argv['prune-imgs'] || argv.i;
 const doPruneVolumes = argv['prune-vols'] || argv.v;
+const doRemoveContainers = (argv['remove-containers'] || argv.r) || doPruneImages || doPruneVolumes;
 
 const repoDir = path.resolve(__dirname, '../rest-backend');
 const composeDir = path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose');
@@ -132,12 +133,23 @@ const removeHubContainers = () => {
 
 const pollContainerStatus = () => {
     const interval = 5000;
-    const timeout = 180000;
+    const timeout = 230000;
     const start = new Date();
 
     log.command('Polling for container health status\n');
 
     const checkStatus = () => {
+        const poll = () => {
+            const elapsedTime = new Date() - start;
+
+            if (elapsedTime > timeout) {
+                log.error('Build timed out waiting for a healthy status for all docker containers');
+                process.stderr.write('\007');
+            } else {
+                setTimeout(checkStatus, interval);
+            }
+        };
+
         execute('docker ps', {
                 silent: true
             })
@@ -150,7 +162,6 @@ const pollContainerStatus = () => {
                     .some(container => container.includes('Restarting ('));
                 const areContainersHealthy = !isContainerUnhealthy && containers
                     .every(container => container.includes('(healthy)'));
-                const elapsedTime = new Date() - start;
 
                 if (isContainerRestarting || isContainerUnhealthy) {
                     log.error(`One or more containers is unhealthy or restarting, try pruning all images and volumes with ${log.getCommandColor('hub-up -iv')}\n`);
@@ -160,12 +171,14 @@ const pollContainerStatus = () => {
                 } else if (areContainersHealthy) {
                     log('All containers are healthy');
                     log(`Total setup time: ${humanize(new Date() - buildStart)}`);
-                } else if (elapsedTime > timeout) {
-                    log.error('Build timed out waiting for a healthy status for all docker containers');
-                    process.stderr.write('\007');
                 } else {
-                    setTimeout(checkStatus, interval);
+                    poll();
                 }
+            })
+            .catch((err) => {
+                // Very occasionally, `docker ps` will exit with a non-zero code
+                log.error(`${err}\n`);
+                poll();
             });
     };
 
@@ -187,15 +200,15 @@ const getContainers = (pattern) => {
         })
         .then((containersData) => {
             return containersData
-            .trim()
-            .split('\n')
-            .map(containerData => {
-                const [hash, name] = containerData.split(' ');
-                return {
-                    hash,
-                    name
-                };
-            });
+                .trim()
+                .split('\n')
+                .map(containerData => {
+                    const [hash, name] = containerData.split(' ');
+                    return {
+                        hash,
+                        name
+                    };
+                });
         });
 };
 
@@ -221,7 +234,7 @@ const logRestartingContainers = () => {
 
 Promise.all([
         !skipBuild && modifyTomcatConfig(),
-        (doPruneVolumes || doPruneImages) && removeHubContainers()
+        doRemoveContainers && removeHubContainers()
     ])
     .then(() => doPruneImages && pruneDockerImages())
     .then(() => doPruneVolumes && pruneDockerVolumes())
