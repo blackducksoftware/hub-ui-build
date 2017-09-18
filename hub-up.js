@@ -143,10 +143,12 @@ const pollContainerStatus = () => {
             const elapsedTime = new Date() - start;
 
             if (elapsedTime > timeout) {
-                log.error('Build timed out waiting for a healthy status for all docker containers');
+                log.error(`Timed out waiting ${humanize(timeout)} for a healthy status for all docker containers`);
                 process.stderr.write('\007');
+                return false;
             } else {
                 setTimeout(checkStatus, interval);
+                return true;
             }
         };
 
@@ -178,7 +180,9 @@ const pollContainerStatus = () => {
             .catch((err) => {
                 // Very occasionally, `docker ps` will exit with a non-zero code
                 log.error(`${err}\n`);
-                poll();
+                if (poll()) {
+                    log('Continuing to poll for container statuses\n');
+                }
             });
     };
 
