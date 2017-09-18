@@ -133,7 +133,7 @@ const removeHubContainers = () => {
 
 const pollContainerStatus = () => {
     const interval = 5000;
-    const timeout = 230000;
+    const timeout = 240000;
     const start = new Date();
 
     log.command('Polling for container health status\n');
