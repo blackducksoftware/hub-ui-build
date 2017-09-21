@@ -41,7 +41,12 @@ const modifyTomcatConfig = () => {
 };
 
 const restoreTomcatConfig = () => {
+    if (!isConfigModified) {
+        return;
+    }
+
     log.command('Restore Apache Tomcat server.xml config\n');
+
     return fsProm.writeFile(tomcatConfigPath, tomcatOriginalConfig)
         .then(() => { isConfigModified = false; })
 };
@@ -245,17 +250,16 @@ Promise.all([
     .then(() => !skipBuild && buildRestBackend())
     .then(() => Promise.all([
         // Restore the server.xml file to its original state
-        !skipBuild && restoreTomcatConfig(),
+        restoreTomcatConfig(),
         // Modify the docker compose configuration
         modifyDockerConfig()
     ]))
     // Run the new docker images
     .then(() => mountHubContainers())
     .then(() => pollContainerStatus())
-    .catch(err => err && log.error(err));
-
-process.on('SIGINT', () => {
-    if (isConfigModified) {
+    .catch((err) => {
+        log.error(err);
         restoreTomcatConfig();
-    }
-});
+    });
+
+process.on('SIGINT', restoreTomcatConfig);
