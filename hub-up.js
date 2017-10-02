@@ -1,16 +1,22 @@
 const buildStart = new Date();
 const path = require('path');
+const log = require('./lib/log');
 
-require('dotenv-safe').load({
-    path: path.resolve(__dirname, '.env'),
-    sample: path.resolve(__dirname, '.env.example')
-});
+try {
+    require('dotenv-safe').load({
+        path: path.resolve(__dirname, '.env'),
+        sample: path.resolve(__dirname, '.env.example')
+    });
+} catch (err) {
+    log.error(`Environment configuration is invalid or not found. Please go the hub-ui-build directory and run ${log.getCommandColor('npm i && npm start')}`);
+    return;
+}
+
 
 const yaml = require('js-yaml');
 const humanize = require('humanize-duration');
 const { argv } = require('yargs');
 const fsProm = require('./lib/fs-promise');
-const log = require('./lib/log');
 const execute = require('./lib/execute');
 const chalk = require('chalk');
 
