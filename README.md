@@ -1,6 +1,6 @@
 # Hub Docker Build
 ### Compatible with the UI development proxy
-This script binds Terminal aliases for mounting the Hub so that it's compatible with UI dev proxy
+This script binds Terminal aliases for building and mounting the Hub to ensure compatibility with UI dev proxy
 
 ## To run:
 1. Clone and install with `git clone https://github.com/sutkh/hub-ui-build.git && cd hub-ui-build && npm install`
