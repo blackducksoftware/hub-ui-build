@@ -1,6 +1,6 @@
 {
   "name": "hub-ui-build",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
   "main": "hub-up.js",
   "scripts": {
