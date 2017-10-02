@@ -1,6 +1,11 @@
 const buildStart = new Date();
-
 const path = require('path');
+
+require('dotenv-safe').load({
+    path: path.resolve(__dirname, '.env'),
+    sample: path.resolve(__dirname, '.env.example')
+});
+
 const yaml = require('js-yaml');
 const humanize = require('humanize-duration');
 const { argv } = require('yargs');
@@ -15,7 +20,7 @@ const doPruneImages = argv['prune-imgs'] || argv.i;
 const doPruneVolumes = argv['prune-vols'] || argv.v;
 const doRemoveContainers = (argv['remove-containers'] || argv.r) || doPruneImages || doPruneVolumes;
 
-const repoDir = path.resolve(__dirname, '../rest-backend');
+const repoDir = process.env.HUB_REPO_DIR;
 const composeDir = path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose');
 const tomcatConfigPath = path.resolve(repoDir, 'docker/blackducksoftware/hub-tomcat/server.xml');
 
@@ -55,7 +60,7 @@ const restoreTomcatConfig = () => {
 const modifyDockerConfig = () => {
     const filePath = path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose/docker-compose.yml');
 
-    log.command('Modify Docker compose config\n');    
+    log.command('Modify Docker compose config\n');
 
     return fsProm.readFile(filePath)
         .then((fileContent) => {
@@ -129,7 +134,7 @@ const removeHubContainers = () => {
         .catch(() => {
             log('Rest-backend hasn\'t been previously built\n');
             return false;
-        })    
+        })
         .then((isDir) => isDir && execute('docker-compose', {
             args,
             cwd: composeDir
@@ -203,6 +208,7 @@ const getRestartingContainers = () => {
 };
 
 // Get the name and hash of containers matching this pattern in their `docker ps` status
+// TODO: use formatting and filtering `docker ps` args instead of homerolling it
 const getContainers = (pattern) => {
     return execute(`docker ps | grep \'${pattern}\' | awk \'{print $1" "$2}\'`, {
             silent: true
