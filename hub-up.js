@@ -12,7 +12,6 @@ try {
     return;
 }
 
-
 const yaml = require('js-yaml');
 const humanize = require('humanize-duration');
 const { argv } = require('yargs');
@@ -182,7 +181,7 @@ const pollContainerStatus = () => {
                     .every(container => container.includes('(healthy)'));
 
                 if (isContainerRestarting || isContainerUnhealthy) {
-                    log.error(`One or more containers is unhealthy or restarting, try pruning all images and volumes with ${log.getCommandColor('hub-up -iv')}\n`);
+                    log.error(`One or more containers is unhealthy or restarting, try pruning all images and volumes with ${log.getCommandColor('hub-up -ivs')}\n`);
                     process.stderr.write('\007');
                     if (isContainerRestarting) { logRestartingContainers(); }
                     if (isContainerUnhealthy) { logUnhealthyContainers(); }
