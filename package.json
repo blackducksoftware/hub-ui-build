@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "chalk": "^2.0.1",
+    "charm": "^1.0.2",
     "dotenv-safe": "^4.0.4",
     "escape-string-applescript": "^2.0.0",
     "fs-extra": "^4.0.2",
@@ -19,6 +20,7 @@
     "js-yaml": "^3.9.0",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.1",
+    "through2": "^2.0.3",
     "yargs": "^8.0.2"
   },
   "devDependencies": {},
