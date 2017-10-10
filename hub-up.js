@@ -1,73 +1,114 @@
 const buildStart = new Date();
 const path = require('path');
 const log = require('./lib/log');
-
-try {
-    require('dotenv-safe').load({
-        path: path.resolve(__dirname, '.env'),
-        sample: path.resolve(__dirname, '.env.example')
-    });
-} catch (err) {
-    log.error(`Environment configuration is invalid or not found. Please go the hub-ui-build directory and run ${log.getCommandColor('npm i && npm start')}`);
-    return;
-}
-
-const yaml = require('js-yaml');
-const humanize = require('humanize-duration');
 const fs = require('./lib/fs-promise');
 const execute = require('./lib/execute');
 const dockerUtil = require('./lib/docker-util');
 const ContainerTable = require('./lib/container-table');
 const Containers = require('./lib/containers');
 
-const { argv } = require('yargs');
-const doDirtyBuild = argv['dirty-build'] || argv.d;
-const skipBuild = argv['skip-build'] || argv.s;
-const doPruneImages = argv['prune-imgs'] || argv.i;
-const doPruneVolumes = argv['prune-vols'] || argv.v;
-const doRemoveContainers = (argv['remove-containers'] || argv.r) || doPruneImages || doPruneVolumes;
+const loadConfig = () => {
+    try {
+        require('dotenv-safe').load({
+            path: path.resolve(__dirname, '.env'),
+            sample: path.resolve(__dirname, '.env.example')
+        });
+    } catch (err) {
+        log.error(`Environment configuration is invalid or not found. Please go the hub-ui-build directory and run ${log.getCommandColor('npm i && npm start')}`);
+        return;
+    }
 
-const repoDir = process.env.HUB_REPO_DIR;
-const tomcatConfigPath = path.resolve(repoDir, 'docker/blackducksoftware/hub-tomcat/server.xml');
+    const argv = require('yargs')
+        .option('dirty-build', {
+            alias: 'd',
+            describe: 'Build the rest-backend without the `clean` gradle task, for a faster build',
+            type: 'boolean',
+            default: false
+        })
+        .option('skip-build', {
+            alias: 's',
+            describe: 'Don\'t make a rest-backend build, useful for unmounting / remounting containers',
+            type: 'boolean',
+            default: false
+        })
+        .option('prune-images', {
+            alias: 'i',
+            describe: 'Prune docker images. We remove the currently mounted docker containers before pruning.',
+            type: 'boolean',
+            default: false
+        })
+        .option('prune-volumes', {
+            alias: 'v',
+            describe: 'Prune docker volumes. We remove the currently mounted docker containers before pruning.',
+            type: 'boolean',
+            default: false
+        })
+        .option('remove-containers', {
+            alias: 'r',
+            describe: 'Remove currently mounted docker containers',
+            type: 'boolean',
+            default: false
+        })
+        .help()
+        .argv;
 
-let tomcatOriginalConfig = '';
-let isConfigModified = false;
+    return Object.assign(
+        {
+            hubRootDir: process.env.HUB_REPO_DIR,
+            composeDir: path.resolve(process.env.HUB_REPO_DIR, 'docker/hub-docker/build/docker-compose/dev/docker-compose'),
+            serverXmlPath: path.resolve(process.env.HUB_REPO_DIR, 'docker/blackducksoftware/hub-tomcat/server.xml'),
+            doRemoveContainers: argv.removeContainers || argv.pruneImages || argv.pruneVolumes
+        },
+        argv
+    );
+};
 
-const hubContainers = new Containers({
-    composeDir: path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose') 
-});
+const {
+    hubRootDir,
+    composeDir,
+    serverXmlPath,
+    doRemoveContainers,
+    pruneVolumes: doPruneVolumes,
+    pruneImages: doPruneImages,
+    skipBuild: doSkipBuild,
+    dirtyBuild: doDirtyBuild
+} = loadConfig();
+let originalServerXml = '';
+let isServerXmlModified = false;
+const hubContainers = new Containers({ composeDir });
 
 // Use http instead of https, because we can't bind both the webapp and the dev proxy to port 443
 const modifyTomcatConfig = () => {
     log.command('Modify Apache Tomcat server.xml config\n');
 
-    return fs.filterFile(tomcatConfigPath, (line) => {
+    return fs.filterFile(serverXmlPath, (line) => {
             const trimmedLine = line.trim();
 
-            tomcatOriginalConfig += line + '\n';
+            originalServerXml += line + '\n';
 
             // We want to remove these lines from the config file
             return ['scheme="https"', 'proxyPort="443"']
                 .every(configLine => configLine !== trimmedLine);
         })
-        .then((content) => fs.writeFile(tomcatConfigPath, content))
-        .then(() => { isConfigModified = true; })
+        .then((content) => fs.writeFile(serverXmlPath, content))
+        .then(() => { isServerXmlModified = true; })
 };
 
 const restoreTomcatConfig = () => {
-    if (!isConfigModified) {
+    if (!isServerXmlModified) {
         return;
     }
 
     log.command('Restore Apache Tomcat server.xml config\n');
 
-    return fs.writeFile(tomcatConfigPath, tomcatOriginalConfig)
-        .then(() => { isConfigModified = false; })
+    return fs.writeFile(serverXmlPath, originalServerXml)
+        .then(() => { isServerXmlModified = false; })
 };
 
 // Expose port 8080 on the webapp container, because that's the port the dev proxy uses
 const modifyDockerConfig = () => {
-    const filePath = path.resolve(repoDir, 'docker/hub-docker/build/docker-compose/dev/docker-compose/docker-compose.yml');
+    const yaml = require('js-yaml');
+    const filePath = path.resolve(composeDir, 'docker-compose.yml');
 
     log.command('Modify Docker compose config\n');
 
@@ -96,17 +137,19 @@ const buildRestBackend = () => {
 
     return execute('./gradlew', {
         args,
-        cwd: repoDir
+        cwd: hubRootDir
     });
 };
 
 const pollContainerStatus = () => {
+    const humanize = require('humanize-duration');
     const start = new Date();
     const interval = 3000;
     const timeout = 240000;
     let timeoutId;
 
     log.command('Polling for container health status\n');
+    
     const containerTable = new ContainerTable();
     containerTable.start();
 
@@ -121,11 +164,14 @@ const pollContainerStatus = () => {
             return;
         }
 
-        Promise.all([
-            Containers.get({ byGrouping: 'status' }),
-            containerTable.render()
-        ])
-            .then(([{ unhealthy, restarting, starting }]) => {
+        Containers.get()
+            .then((containers) => {
+                const nameMap = Containers.groupByProperty(containers, 'name');
+                return containerTable.render(nameMap)
+                    .then(() => containers);
+            })
+            .then((containers) => {
+                const { unhealthy, restarting, starting } = Containers.groupByProperty(containers, 'status');
                 const doContinuePolling = starting && !unhealthy && !restarting;
 
                 if (doContinuePolling) {
@@ -145,6 +191,7 @@ const pollContainerStatus = () => {
             })
             // Very occasionally, `docker ps` will exit with a non-zero status code
             .catch((err) => { console.error(err); });
+
     };
 
     checkStatus();
@@ -159,13 +206,13 @@ const logInvalidContainers = (containers) => {
 };
 
 Promise.all([
-        !skipBuild && modifyTomcatConfig(),
+        !doSkipBuild && modifyTomcatConfig(),
         doRemoveContainers && hubContainers.remove(doPruneVolumes)
     ])
     .then(() => doPruneImages && dockerUtil.pruneImages())
     .then(() => doPruneVolumes && dockerUtil.pruneVolumes())
-    .then(() => !skipBuild && buildRestBackend())
-    .then(() => Promise.all([
+    .then(() => !doSkipBuild && buildRestBackend())
+    .then(() => !doSkipBuild && Promise.all([
         // Restore the server.xml file to its original state
         restoreTomcatConfig(),
         // Modify the docker compose configuration
