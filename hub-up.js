@@ -15,7 +15,7 @@ const loadConfig = () => {
         });
     } catch (err) {
         log.error(`Environment configuration is invalid or not found. Please go the hub-ui-build directory and run ${log.getCommandColor('npm i && npm start')}`);
-        return;
+        process.exit(1);
     }
 
     const argv = require('yargs')
