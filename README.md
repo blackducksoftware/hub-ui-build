@@ -7,8 +7,8 @@ This script binds Terminal aliases for building and mounting the Hub to ensure c
 2. Run `npm start`
 
 ## Hub Build Options:
-```--prune-vols, -v```: Prune volumes
-<br>```--prune-imgs, -i```: Prune images
+```--prune-volumes, -v```: Prune volumes
+<br>```--prune-images, -i```: Prune images
 <br>```--dirty-build, -d```: Build the rest-backend without the `clean` gradle task, for a faster build
 <br>```--skip-build, -s```: Don't make a rest-backend build, useful for unmounting / remounting containers
 
