@@ -19,9 +19,9 @@ const loadConfig = () => {
     }
 
     const argv = require('yargs')
-        .option('dirty-build', {
-            alias: 'd',
-            describe: 'Build the rest-backend without the `clean` gradle task, for a faster build',
+        .option('clean-build', {
+            alias: 'c',
+            describe: 'Build the rest-backend with the `clean` gradle task, for a slower but more reliable build',
             type: 'boolean',
             default: false
         })
@@ -71,7 +71,7 @@ const {
     pruneVolumes: doPruneVolumes,
     pruneImages: doPruneImages,
     skipBuild: doSkipBuild,
-    dirtyBuild: doDirtyBuild
+    cleanBuild: doCleanBuild
 } = loadConfig();
 let originalServerXml = '';
 let isServerXmlModified = false;
@@ -130,7 +130,7 @@ const modifyDockerConfig = () => {
 };
 
 const buildRestBackend = () => {
-    const args = (doDirtyBuild ? [] : ['clean']).concat(
+    const args = (doCleanBuild ? ['clean'] : []).concat(
         'docker',
         'docker:hub-docker:build'
     );
