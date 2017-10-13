@@ -1,7 +1,6 @@
 const buildStart = new Date();
 const path = require('path');
 const log = require('./lib/log');
-const fs = require('./lib/fs-promise');
 const execute = require('./lib/execute');
 const dockerUtil = require('./lib/docker-util');
 const ContainerTable = require('./lib/container-table');
@@ -50,13 +49,13 @@ const loadConfig = () => {
             default: false
         })
         .help()
+        .alias('help', 'h')
         .argv;
 
     return Object.assign(
         {
             hubRootDir: process.env.HUB_REPO_DIR,
             composeDir: path.resolve(process.env.HUB_REPO_DIR, 'docker/hub-docker/build/docker-compose/dev/docker-compose'),
-            serverXmlPath: path.resolve(process.env.HUB_REPO_DIR, 'docker/blackducksoftware/hub-tomcat/server.xml'),
             doRemoveContainers: argv.removeContainers || argv.pruneImages || argv.pruneVolumes
         },
         argv
@@ -66,68 +65,13 @@ const loadConfig = () => {
 const {
     hubRootDir,
     composeDir,
-    serverXmlPath,
     doRemoveContainers,
     pruneVolumes: doPruneVolumes,
     pruneImages: doPruneImages,
     skipBuild: doSkipBuild,
     cleanBuild: doCleanBuild
 } = loadConfig();
-let originalServerXml = '';
-let isServerXmlModified = false;
 const hubContainers = new Containers({ composeDir });
-
-// Use http instead of https, because we can't bind both the webapp and the dev proxy to port 443
-const modifyTomcatConfig = () => {
-    log.command('Modify Apache Tomcat server.xml config\n');
-
-    return fs.filterFile(serverXmlPath, (line) => {
-            const trimmedLine = line.trim();
-
-            originalServerXml += line + '\n';
-
-            // We want to remove these lines from the config file
-            return ['scheme="https"', 'proxyPort="443"']
-                .every(configLine => configLine !== trimmedLine);
-        })
-        .then((content) => fs.writeFile(serverXmlPath, content))
-        .then(() => { isServerXmlModified = true; })
-};
-
-const restoreTomcatConfig = () => {
-    if (!isServerXmlModified) {
-        return;
-    }
-
-    log.command('Restore Apache Tomcat server.xml config\n');
-
-    return fs.writeFile(serverXmlPath, originalServerXml)
-        .then(() => { isServerXmlModified = false; })
-};
-
-// Expose port 8080 on the webapp container, because that's the port the dev proxy uses
-const modifyDockerConfig = () => {
-    const yaml = require('js-yaml');
-    const filePath = path.resolve(composeDir, 'docker-compose.yml');
-
-    log.command('Modify Docker compose config\n');
-
-    return fs.readFile(filePath)
-        .then((fileContent) => {
-            const config = yaml.safeLoad(fileContent, 'utf8');
-            const ports = config.services.webapp.ports;
-
-            if (!ports.includes('8080:8080')) {
-                ports.push('8080:8080');
-            }
-
-            const serializedConfig = yaml.safeDump(config, {
-                flowLevel: 0
-            });
-
-            return fs.writeFile(filePath, serializedConfig);
-        });
-};
 
 const buildRestBackend = () => {
     const args = (doCleanBuild ? ['clean'] : []).concat(
@@ -205,25 +149,11 @@ const logInvalidContainers = (containers) => {
     });
 };
 
-Promise.all([
-        !doSkipBuild && modifyTomcatConfig(),
-        doRemoveContainers && hubContainers.remove(doPruneVolumes)
-    ])
+Promise.resolve(doRemoveContainers && hubContainers.remove(doPruneVolumes))
     .then(() => doPruneImages && dockerUtil.pruneImages())
     .then(() => doPruneVolumes && dockerUtil.pruneVolumes())
     .then(() => !doSkipBuild && buildRestBackend())
-    .then(() => !doSkipBuild && Promise.all([
-        // Restore the server.xml file to its original state
-        restoreTomcatConfig(),
-        // Modify the docker compose configuration
-        modifyDockerConfig()
-    ]))
     // Run the new docker images
     .then(() => hubContainers.mount())
     .then(() => pollContainerStatus())
-    .catch((err) => {
-        log.error(err);
-        restoreTomcatConfig();
-    });
-
-process.on('SIGINT', restoreTomcatConfig);
+    .catch(log.error);
