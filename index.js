@@ -30,7 +30,7 @@ const writeEnvConfig = () => {
         {
             message: 'Which terminal config file should we source the aliases from?',
             name: 'TERMINAL_RC_PATH',
-            default: '.bashrc',
+            default: '.bash_profile',
             filter: (rcPath) => path.resolve(os.homedir(), rcPath)
         }
     ])
