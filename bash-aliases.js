@@ -7,7 +7,7 @@ const runHubPath = path.resolve(__dirname, 'hub-up.js');
 const runDevPath = path.resolve(__dirname, 'ui-dev.js');
 const runUiPath = path.resolve(__dirname, 'ui-up.js');
 const hubupPath = path.resolve(os.homedir(), '.hub-up');
-const bashProfilePath = path.resolve(os.homedir(), '.profile');
+const rcPath = process.env.TERMINAL_RC_PATH;
 const uiDir = process.env.UI_REPO_DIR;
 const cmdsDir = path.join(__dirname, 'commands');
 
@@ -22,12 +22,12 @@ fsProm.writeFile(hubupPath, `${aliases.join('\n')}\n`);
 
 const source = `source ${hubupPath}`;
 
-fsProm.isFile(bashProfilePath)
+fsProm.isFile(rcPath)
     .then(isFile => {
         if (isFile) {
-            return fsProm.concatUniqueLines(bashProfilePath, [source]);
+            return fsProm.concatUniqueLines(rcPath, [source]);
         } else {
-            return fsProm.writeFile(bashProfilePath, `${source}\n`);
+            return fsProm.writeFile(rcPath, `${source}\n`);
         }
     });
 
@@ -37,7 +37,6 @@ const startHub = `printf '\\e[4;426;540t'; printf '\\e[3;0;505t'; printf '\\e[5t
 const buildUiCmdPath = path.join(cmdsDir, 'ui-build.sh');
 const buildHubCmdPath = path.join(cmdsDir, 'hub-start.sh');
 const proxyCmdPath = path.join(cmdsDir, 'ui-proxy.sh');
-
 
 Promise.all([
     fsProm.outputFile(buildUiCmdPath, buildUi),

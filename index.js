@@ -26,7 +26,13 @@ const writeEnvConfig = () => {
             message: 'Same question, for the UI directory?',
             name: 'UI_REPO_DIR',
             default: path.join(__dirname, '../ui'),
-        }, prompt)
+        }, prompt),
+        {
+            message: 'Which terminal config file should we source the aliases from?',
+            name: 'TERMINAL_RC_PATH',
+            default: '.bashrc',
+            filter: (rcPath) => path.resolve(os.homedir(), rcPath)
+        }
     ])
         .then((config) => {
             process.stdout.write('\n');
@@ -40,14 +46,28 @@ const writeEnvConfig = () => {
 };
 
 const loadEnvConfig = () => {
-    require('dotenv-safe').load({
-        path: path.resolve(__dirname, '.env'),
-        sample: path.resolve(__dirname, '.env.example')
-    });
+    const loadConfig = () => {
+        require('dotenv-safe').load({
+            path: path.resolve(__dirname, '.env'),
+            sample: path.resolve(__dirname, '.env.example')
+        });
+    };
+
+    return new Promise((resolve) => {
+        try {
+            loadConfig();
+            resolve();
+        } catch (err) {
+            writeEnvConfig()
+                .then(() => {
+                    loadConfig();
+                    resolve();
+                });
+        }
+    })
+
 };
 
-fs.stat('./.env')
-    .catch(writeEnvConfig)
-    .then(loadEnvConfig)
+loadEnvConfig()
     .then(() => require('./bash-aliases'))
     .catch((err) => console.error(err));
