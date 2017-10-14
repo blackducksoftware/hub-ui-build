@@ -1,5 +1,7 @@
 # Hub Docker Build
-Bind terminal aliases for building and mounting the Hub's rest-backend and UI for development. The rest-backend is hosted on port `443` and can be accessed at `https://localhost`. The UI development proxy is hosted on `8443` and is accessed at `https://localhost:8443`.
+Bind terminal aliases for building and mounting the Hub's rest-backend and UI for development. 
+<br> The rest-backend is hosted on port `443` and can be accessed at `https://localhost`. 
+<br> The UI development proxy is hosted on `8443` and is accessed at `https://localhost:8443`.
 
 ## To bind aliases:
 1. Clone and install with `git clone https://github.com/blackducksoftware/hub-ui-build.git && cd hub-ui-build && npm install`
