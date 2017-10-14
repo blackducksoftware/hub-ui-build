@@ -7,7 +7,7 @@ This script binds terminal aliases for building and mounting the Hub's rest-back
 
 ## Aliases:
 `hub-up`: Builds and mounts the Hub's docker containers, and makes modifications to the Tomcat and docker-compose configurations to host the rest-backend's web app on port 8080
-###### `hub-up` options
+###### `hub-up` options:
   ```--prune-volumes, -v```: Prune volumes
 <br>```--prune-images, -i```: Prune images
 <br>```--clean-build, -c```: Build the rest-backend with the `clean` gradle task, for a slower but more reliable build
