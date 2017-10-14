@@ -6,14 +6,14 @@ This script binds terminal aliases for building and mounting the Hub's rest-back
 2. Run `npm start`
 
 ## Aliases:
-`hub-up`: Builds and mounts the Hub's docker containers, and makes modifications to the Tomcat and docker-compose configurations to host the rest-backend's web app on port 8080
-  #### Hub Build Options:
+* `hub-up`: Builds and mounts the Hub's docker containers, and makes modifications to the Tomcat and docker-compose configurations to host the rest-backend's web app on port 8080
+#### Hub Build Options:
   ```--prune-volumes, -v```: Prune volumes
-  <br>```--prune-images, -i```: Prune images
-  <br>```--clean-build, -c```: Build the rest-backend with the `clean` gradle task, for a slower but more reliable build
-  <br>```--skip-build, -s```: Don't make a rest-backend build, useful for unmounting / remounting containers
-  <br>```--remove-containers, -r```: Remove currently mounted docker containers
+<br>```--prune-images, -i```: Prune images
+<br>```--clean-build, -c```: Build the rest-backend with the `clean` gradle task, for a slower but more reliable build
+<br>```--skip-build, -s```: Don't make a rest-backend build, useful for unmounting / remounting containers
+<br>```--remove-containers, -r```: Remove currently mounted docker containers
 
-`ui-up`: Builds the UI and launches the development proxy
+* `ui-up`: Builds the UI and launches the development proxy
 
-`ui-dev`: Equivalent to running both `hub-up` and `ui-up`
+* `ui-dev`: Equivalent to running both `hub-up` and `ui-up`
