@@ -6,7 +6,7 @@ This script binds terminal aliases for building and mounting the Hub's rest-back
 2. Run `npm start`
 
 ## Aliases:
-`hub-up`: Builds and mounts the Hub's docker containers, and makes modifications to the Tomcat and docker-compose configurations to host the rest-backend's web app on port 8080
+`hub-up`: Builds and mounts the Hub's docker containers
 ###### Options:
   &nbsp;&nbsp;&nbsp;&nbsp;```--prune-volumes, -v```: Prune volumes
 <br>&nbsp;&nbsp;&nbsp;&nbsp;```--prune-images, -i```: Prune images
