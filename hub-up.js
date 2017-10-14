@@ -13,7 +13,7 @@ const loadConfig = () => {
             sample: path.resolve(__dirname, '.env.example')
         });
     } catch (err) {
-        log.error(`Environment configuration is invalid or not found. Please go the hub-ui-build directory and run ${log.getCommandColor('npm i && npm start')}`);
+        log.error(`Environment configuration is invalid or not found. Please run: ${log.getCommandColor(`cd ${path.resolve(__dirname)} && npm i && npm start`)}`);
         process.exit(1);
     }
 
