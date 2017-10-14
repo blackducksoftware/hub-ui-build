@@ -50,5 +50,5 @@ Promise.all([
     ]))
     .then(() => {
         log(`To use the aliases in this terminal, run this command: ${log.getCommandColor(source)}`);
-        log('You can use hub-up --help to get a list of command arguments');
+        log(`You can use ${log.getCommandColor('hub-up --help')} to get a list of command arguments`);
     });
