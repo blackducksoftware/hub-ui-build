@@ -9,7 +9,7 @@ Bind OSX terminal aliases for building and mounting the Hub's rest-backend and U
 
 ## Aliases:
 `hub-up`: Builds and mounts the Hub's docker containers
-###### Options:
+###### Build Options:
   &nbsp;&nbsp;&nbsp;&nbsp;```--prune-volumes, -v```: Prune volumes
 <br>&nbsp;&nbsp;&nbsp;&nbsp;```--prune-images, -i```: Prune images
 <br>&nbsp;&nbsp;&nbsp;&nbsp;```--clean-build, -c```: Build the rest-backend with the `clean` gradle task, for a slower but more reliable build
