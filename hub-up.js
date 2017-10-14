@@ -50,12 +50,13 @@ const loadConfig = () => {
         })
         .help()
         .alias('help', 'h');
+    const { removeContainers, pruneImages, pruneVolumes } = argv;
 
     return Object.assign(
         {
             hubRootDir: process.env.HUB_REPO_DIR,
             composeDir: path.resolve(process.env.HUB_REPO_DIR, 'docker/hub-docker/build/docker-compose/dev/docker-compose'),
-            doRemoveContainers: argv.removeContainers || argv.pruneImages || argv.pruneVolumes
+            doRemoveContainers: removeContainers || pruneImages || pruneVolumes
         },
         argv
     );
