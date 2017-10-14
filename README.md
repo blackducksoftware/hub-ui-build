@@ -7,12 +7,12 @@ This script binds terminal aliases for building and mounting the Hub's rest-back
 
 ## Aliases:
 `hub-up`: Builds and mounts the Hub's docker containers, and makes modifications to the Tomcat and docker-compose configurations to host the rest-backend's web app on port 8080
-###### `hub-up` options:
-  ```--prune-volumes, -v```: Prune volumes
-<br>```--prune-images, -i```: Prune images
-<br>```--clean-build, -c```: Build the rest-backend with the `clean` gradle task, for a slower but more reliable build
-<br>```--skip-build, -s```: Don't make a rest-backend build, useful for unmounting / remounting containers
-<br>```--remove-containers, -r```: Remove currently mounted docker containers
+###### Options:
+  &nbsp;&nbsp;&nbsp;&nbsp;```--prune-volumes, -v```: Prune volumes
+<br>&nbsp;&nbsp;&nbsp;&nbsp;```--prune-images, -i```: Prune images
+<br>&nbsp;&nbsp;&nbsp;&nbsp;```--clean-build, -c```: Build the rest-backend with the `clean` gradle task, for a slower but more reliable build
+<br>&nbsp;&nbsp;&nbsp;&nbsp;```--skip-build, -s```: Don't make a rest-backend build, useful for unmounting / remounting containers
+<br>&nbsp;&nbsp;&nbsp;&nbsp;```--remove-containers, -r```: Remove currently mounted docker containers
 
 `ui-up`: Builds the UI and launches the development proxy
 
