@@ -1,5 +1,5 @@
 # Hub Build Aliases
-Bind OSX terminal aliases for building and mounting the Hub's rest-backend and UI for development. 
+Bind OSX terminal aliases for building and mounting the Hub's rest-backend Docker containers and UI for development. 
 <br> The rest-backend is hosted on port `443` and can be accessed at `https://localhost`. 
 <br> The UI development proxy is hosted on port `8443` and is accessed at `https://localhost:8443`.
 
