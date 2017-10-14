@@ -17,7 +17,7 @@ const loadConfig = () => {
         process.exit(1);
     }
 
-    const argv = require('yargs')
+    const { argv } = require('yargs')
         .option('clean-build', {
             alias: 'c',
             describe: 'Build the rest-backend with the `clean` gradle task, for a slower but more reliable build',
@@ -49,8 +49,7 @@ const loadConfig = () => {
             default: false
         })
         .help()
-        .alias('help', 'h')
-        .argv;
+        .alias('help', 'h');
 
     return Object.assign(
         {
@@ -74,10 +73,14 @@ const {
 const hubContainers = new Containers({ composeDir });
 
 const buildRestBackend = () => {
-    const args = (doCleanBuild ? ['clean'] : []).concat(
+    const args = [
         'docker',
         'docker:hub-docker:build'
-    );
+    ];
+
+    if (doCleanBuild) {
+        args.unshift('clean');
+    }
 
     return execute('./gradlew', {
         args,
@@ -128,7 +131,7 @@ const pollContainerStatus = () => {
                 if (unhealthy || restarting) {
                     log.error(`\nOne or more containers is unhealthy or restarting, try pruning all images and volumes with ${log.getCommandColor('hub-up -ivs')}\n`);
                     process.stderr.write('\007');
-                    logInvalidContainers([].concat(unhealthy || [], restarting || []));
+                    logInvalidContainers([...unhealthy || [], ...restarting || []]);
                 } else {
                     log(`Total setup time: ${humanize(new Date() - buildStart)}`);
                 }
