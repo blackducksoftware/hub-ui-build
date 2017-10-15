@@ -1,3 +1,5 @@
+'use strict';
+
 const inquirer = require('inquirer');
 const fs = require('./lib/fs-promise');
 const path = require('path');

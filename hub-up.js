@@ -1,3 +1,5 @@
+'use strict';
+
 const buildStart = new Date();
 const path = require('path');
 const log = require('./lib/log');
@@ -97,7 +99,7 @@ const pollContainerStatus = () => {
     let timeoutId;
 
     log.command('Polling for container health status\n');
-    
+
     const containerTable = new ContainerTable();
     containerTable.start();
 
@@ -108,7 +110,7 @@ const pollContainerStatus = () => {
             timeoutId = setTimeout(checkStatus, interval);
         } else {
             log.error(`Timed out waiting ${humanize(timeout)} for a healthy status for all docker containers`);
-            process.stderr.write('\007');
+            process.stderr.write('\\007');
             return;
         }
 
@@ -131,7 +133,7 @@ const pollContainerStatus = () => {
 
                 if (unhealthy || restarting) {
                     log.error(`\nOne or more containers is unhealthy or restarting, try pruning all images and volumes with ${log.getCommandColor('hub-up -ivs')}\n`);
-                    process.stderr.write('\007');
+                    process.stderr.write('\\007');
                     logInvalidContainers([...unhealthy || [], ...restarting || []]);
                 } else {
                     log(`Total setup time: ${humanize(new Date() - buildStart)}`);
