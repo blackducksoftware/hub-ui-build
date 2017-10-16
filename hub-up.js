@@ -110,7 +110,7 @@ const pollContainerStatus = () => {
             timeoutId = setTimeout(checkStatus, interval);
         } else {
             log.error(`Timed out waiting ${humanize(timeout)} for a healthy status for all docker containers`);
-            process.stderr.write('\\007');
+            process.stderr.write('\x07');
             return;
         }
 
@@ -132,8 +132,9 @@ const pollContainerStatus = () => {
                 clearTimeout(timeoutId);
 
                 if (unhealthy || restarting) {
-                    log.error(`\nOne or more containers is unhealthy or restarting, try pruning all images and volumes with ${log.getCommandColor('hub-up -ivs')}\n`);
-                    process.stderr.write('\\007');
+                    log.error(`\nOne or more containers is unhealthy or restarting, try pruning all volumes with ${log.getCommandColor('hub-up -sv')}`);
+                    log.error(`If that doesn\'t work, try pruning all images and making a clean build with ${log.getCommandColor('hub-up -ivc')}\n`);
+                    process.stderr.write('\x07');
                     logInvalidContainers([...unhealthy || [], ...restarting || []]);
                 } else {
                     log(`Total setup time: ${humanize(new Date() - buildStart)}`);
@@ -141,7 +142,6 @@ const pollContainerStatus = () => {
             })
             // Very occasionally, `docker ps` will exit with a non-zero status code
             .catch((err) => { console.error(err); });
-
     };
 
     checkStatus();
@@ -155,7 +155,7 @@ const logInvalidContainers = (containers) => {
     });
 };
 
-Promise.resolve(doRemoveContainers && hubContainers.remove(doPruneVolumes))
+Promise.resolve(doRemoveContainers && hubContainers.remove({ doPruneVolumes, doPruneImages }))
     .then(() => doPruneImages && dockerUtil.pruneImages())
     .then(() => doPruneVolumes && dockerUtil.pruneVolumes())
     .then(() => !doSkipBuild && buildRestBackend())
