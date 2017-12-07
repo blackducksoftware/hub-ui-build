@@ -52,6 +52,7 @@ const loadConfig = () => {
         })
         .help()
         .alias('help', 'h');
+
     const { removeContainers, pruneImages, pruneVolumes } = argv;
 
     return Object.assign(
@@ -135,7 +136,7 @@ const pollContainerStatus = () => {
                     log.error(`\nOne or more containers is unhealthy or restarting, try pruning all volumes with ${log.getCommandColor('hub-up -sv')}`);
                     log.error(`If that doesn\'t work, try pruning all images and making a clean build with ${log.getCommandColor('hub-up -ivc')}\n`);
                     process.stderr.write('\x07');
-                    logInvalidContainers([...unhealthy || [], ...restarting || []]);
+                    logInvalidContainers(...unhealthy || [], ...restarting || []);
                 } else {
                     log(`Total setup time: ${humanize(new Date() - buildStart)}`);
                 }
@@ -148,7 +149,7 @@ const pollContainerStatus = () => {
 };
 
 
-const logInvalidContainers = (containers) => {
+const logInvalidContainers = (...containers) => {
     containers.forEach(({ name, id, status }) => {
         log.error(`Container: ${name} is ${status}`);
         log.error(`Run ${log.getCommandColor(`docker logs ${id} --tail 50`)} to see the container's last 50 log entries\n`);

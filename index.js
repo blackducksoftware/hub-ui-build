@@ -20,14 +20,14 @@ const prompt = {
 const writeEnvConfig = () => {
     return inquirer.prompt([
         Object.assign({
-            message: 'What\'s the resolved or relative path to the rest-backend directory?',
+            message: 'What\'s the resolved or relative path to the hub-backend directory?',
             name: 'HUB_REPO_DIR',
-            default: path.join(__dirname, '../rest-backend')
+            default: path.join(__dirname, '../hub-backend')
         }, prompt),
         Object.assign({
-            message: 'Same question, for the UI directory?',
+            message: 'Same question, for the hub-ui directory?',
             name: 'UI_REPO_DIR',
-            default: path.join(__dirname, '../ui'),
+            default: path.join(__dirname, '../hub-ui'),
         }, prompt),
         {
             message: 'Which terminal config file should we source the aliases from?',
